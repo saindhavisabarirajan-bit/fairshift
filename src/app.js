@@ -3,7 +3,7 @@ import { ORG, TYPES, HR, H, seed as seedOrg, add as addRec, verify as ver, verif
 // Comprehensive Trilingual Dictionary
 const T = {
   en: {
-    heroBadge: "✦ Welcome to a new era · FairShift Protocol",
+    heroBadge: "Welcome to a new era · FairShift Protocol",
     heroTitle: "Technology that redefines fair labor & interaction",
     heroSub: "Decent work intelligence platform powered by tamper-evident cryptographic ledgers, automated payslips, anonymous hazard dispatch, and fatigue risk intelligence.",
     roleWorker: "Worker Portal",
@@ -83,7 +83,7 @@ const T = {
     blockInfo: "Block Verification Info"
   },
   ta: {
-    heroBadge: "✦ புதிய யுகத்திற்கு நல்வரவு · FairShift நெறிமுறை",
+    heroBadge: "புதிய யுகத்திற்கு நல்வரவு · FairShift நெறிமுறை",
     heroTitle: "நியாயமான உழைப்பு மற்றும் பாதுகாப்பை மறுவரையறை செய்யும் தொழில்நுட்பம்",
     heroSub: "கிரிப்டோகிராஃபிக் வருகைப் பதிவு, தானியங்கி சம்பளச் சீட்டு, பெயர் குறிப்பிடாத புகார் மற்றும் சோர்வு அபாய நுண்ணறிவு.",
     roleWorker: "தொழிலாளர் தளம்",
@@ -163,7 +163,7 @@ const T = {
     blockInfo: "தொகுதி விவரம்"
   },
   hi: {
-    heroBadge: "✦ नए युग में आपका स्वागत है · FairShift प्रोटोकॉल",
+    heroBadge: "नए युग में आपका स्वागत है · FairShift प्रोटोकॉल",
     heroTitle: "उचित श्रम और सुरक्षा को पुनर्परिभाषित करने वाली तकनीक",
     heroSub: "क्रिप्टोग्राफ़िक हाजिरी लेज़र, स्वचालित वेतन पर्ची, गुमनाम खतरा रिपोर्टिंग और थकान जोखिम विश्लेषण।",
     roleWorker: "श्रमिक पोर्टल",
