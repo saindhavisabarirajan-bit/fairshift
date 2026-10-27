@@ -1047,9 +1047,9 @@ function initOrbCanvas() {
     targetRotX = -mouseY * 0.35;
   });
 
-  const RINGS = 24;
-  const PTS_PER_RING = 48;
-  const BASE_RADIUS = Math.min(width, height) * 0.32;
+  const RINGS = 32;
+  const PTS_PER_RING = 64;
+  const BASE_RADIUS = Math.min(width, height) * 0.42;
   let time = 0;
 
   function animate() {
@@ -1060,7 +1060,7 @@ function initOrbCanvas() {
     ctx.clearRect(0, 0, width, height);
 
     const cx = width / 2;
-    const cy = height * 0.38; // Place orb higher around hero headline
+    const cy = Math.min(height * 0.42, 380);
     const fov = 480;
 
     // Harmonic Undulating Wave Sphere
