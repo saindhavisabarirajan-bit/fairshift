@@ -1,4 +1,9 @@
-import { ORG, TYPES, HR, H, seed as seedOrg, add as addRec, verify as ver, verifyWorker as verW, calc as cal, flags as fl, groups as grp } from "./core.js";
+import {
+  ORG, TYPES, HR, H,
+  seed as seedOrg, add as addRec, verify as ver, verifyWorker as verW,
+  calc as cal, flags as fl, groups as grp,
+  passport as genPassport, encode as encodePassport, checkPassport, heat
+} from "./core.js";
 
 // Comprehensive Trilingual Dictionary
 const T = {
@@ -51,6 +56,9 @@ const T = {
     skillPassport: "Portable Skill Passport",
     skillSubtitle: "Cryptographically verified record of training, experience, and safety accreditations.",
     verifiedSkill: "Verified Credential",
+    createPassport: "Export Work Passport",
+    passportHelp: "A tamper-proof credential code proving your verified hours and skills. Share it with any new employer across any sector.",
+    copyCode: "Copy Credential Code",
     kpiWorkers: "Active Workforce",
     kpiHours: "7-Day Verified Hours",
     kpiOt: "7-Day Overtime",
@@ -63,6 +71,8 @@ const T = {
     restoreBtn: "🔄 Restore Ledger Integrity",
     resetBtn: "↺ Reset Demo",
     fatigueTitle: "Fatigue & Quit-Risk Intelligence",
+    heatmapTitle: "Seven-Day Fatigue Heatmap",
+    heatmapSubtitle: "Daily hours breakdown. Outlined red cells indicate shifts exceeding the daily sector cap.",
     colWorker: "Worker",
     colHours: "Hours",
     colOt: "OT",
@@ -72,6 +82,9 @@ const T = {
     riskLow: "Low",
     riskMed: "Medium",
     riskHigh: "Critical",
+    verifyPassportTitle: "Verify Applicant Work Passport",
+    verifyPassportSubtitle: "Hiring a new worker? Paste their portable credential code below to verify their work history against the issuing sector's ledger.",
+    verifyBtn: "Verify Credential",
     adminIncidents: "Anonymous Incident Investigation Center",
     sealedTitle: "Cryptographically Sealed Incident",
     sealedDesc: "report registered. Awaiting independent worker confirmation to protect reporter identity.",
@@ -131,6 +144,9 @@ const T = {
     skillPassport: "டிஜிட்டல் திறன் பாஸ்போர்ட்",
     skillSubtitle: "சரிபார்க்கப்பட்ட தொழில் திறன், பாதுகாப்புப் பயிற்சி மற்றும் அனுபவச் சான்று.",
     verifiedSkill: "சரிபார்க்கப்பட்ட சான்றிதழ்",
+    createPassport: "பணி பாஸ்போர்ட்டை உருவாக்கு",
+    passportHelp: "உங்கள் பணி அனுபவத்தை உறுதிப்படுத்தும் குறியீடு. எந்த ஒரு புதிய முதலாளியிடமும் இதைப் பகிரலாம்.",
+    copyCode: "சான்றிதழ் குறியீட்டை நகலெடு",
     kpiWorkers: "தொழிலாளர்கள்",
     kpiHours: "பணி நேரம் (7 நாட்கள்)",
     kpiOt: "கூடுதல் நேரம் (7 நாட்கள்)",
@@ -143,6 +159,8 @@ const T = {
     restoreBtn: "🔄 பதிவேட்டைச் சரிசெய்",
     resetBtn: "↺ மீட்டமை",
     fatigueTitle: "சோர்வு & விலகல் அபாய நுண்ணறிவு",
+    heatmapTitle: "7-நாள் சோர்வு வரைபடம் (Heatmap)",
+    heatmapSubtitle: "தினசரி பணி மணிநேரம். சிவப்பு கட்டங்கள் தினசரி உச்சவரம்பைத் தாண்டியதைக் குறிக்கின்றன.",
     colWorker: "தொழிலாளி",
     colHours: "மணிநேரம்",
     colOt: "கூடுதல்",
@@ -152,6 +170,9 @@ const T = {
     riskLow: "குறைவு",
     riskMed: "நடுத்தரம்",
     riskHigh: "அபாயகரமானது",
+    verifyPassportTitle: "தொழிலாளர் பாஸ்போர்ட்டைச் சரிபார்",
+    verifyPassportSubtitle: "புதிய தொழிலாளரின் சான்றிதழ் குறியீட்டை உள்ளிட்டு முந்தைய நிறுவனப் பதிவேட்டுடன் சரிபார்க்கவும்.",
+    verifyBtn: "சரிபார்",
     adminIncidents: "பெயரற்ற விபத்து விசாரணை மையம்",
     sealedTitle: "குறியாக்கம் செய்யப்பட்ட புகார்",
     sealedDesc: "புகார் பெறப்பட்டது. தொழிலாளரின் பாதுகாப்பிற்காக அடுத்த உறுதிப்படுத்தல் வரை விவரங்கள் பூட்டப்பட்டுள்ளன.",
@@ -211,6 +232,9 @@ const T = {
     skillPassport: "पोर्टेबल कौशल पासपोर्ट",
     skillSubtitle: "सत्यापित प्रशिक्षण, सुरक्षा प्रमाणन और कार्य अनुभव का डिजिटल प्रमाण।",
     verifiedSkill: "सत्यापित कौशल",
+    createPassport: "वर्क पासपोर्ट तैयार करें",
+    passportHelp: "आपके सत्यापित कार्य अनुभव का प्रमाण कोड। किसी भी नए नियोक्ता के साथ साझा करें।",
+    copyCode: "कोड कॉपी करें",
     kpiWorkers: "सक्रिय श्रमिक",
     kpiHours: "कार्य घंटे (7 दिन)",
     kpiOt: "ओवरटाइम (7 दिन)",
@@ -223,6 +247,8 @@ const T = {
     restoreBtn: "🔄 लेज़र पुनः स्थापित करें",
     resetBtn: "↺ रीसेट करें",
     fatigueTitle: "थकान व छोड़ने के जोखिम का विश्लेषण",
+    heatmapTitle: "सात-दिवसीय थकान हीटमैप",
+    heatmapSubtitle: "दैनिक कार्य घंटे। लाल बॉर्डर वाले बॉक्स दैनिक कैप से अधिक काम दर्शाते हैं।",
     colWorker: "श्रमिक",
     colHours: "घंटे",
     colOt: "ओवरटाइम",
@@ -232,6 +258,9 @@ const T = {
     riskLow: "कम",
     riskMed: "मध्यम",
     riskHigh: "गंभीर",
+    verifyPassportTitle: "कार्य पासपोर्ट सत्यापित करें",
+    verifyPassportSubtitle: "नए उम्मीदवार का पासपोर्ट कोड दर्ज कर जारीकर्ता लेज़र से तुरंत पुष्टि करें।",
+    verifyBtn: "पुष्टि करें",
     adminIncidents: "गुमनाम शिकायत अन्वेषण केंद्र",
     sealedTitle: "एन्क्रिप्टेड सुरक्षित शिकायत",
     sealedDesc: "शिकायत दर्ज। पहचान की रक्षा हेतु दूसरे श्रमिक की पुष्टि की प्रतीक्षा है।",
@@ -251,12 +280,15 @@ const S = {
   lang: "en",
   wk: 0,
   len: 8,
-  myReports: {}, // Scoped per worker
+  myReports: {},
   showQRModal: false,
   isListening: false,
   isSpeaking: false,
   tamperedBackup: null,
-  activeBlockInspect: null
+  activeBlockInspect: null,
+  passportCode: "",
+  verifyCode: "",
+  verifyResult: null
 };
 
 const D = {};
@@ -274,7 +306,7 @@ const flags = (o, w) => fl(D[o], w, ORG[o]);
 const groups = o => grp(D[o]);
 const fmt = ms => new Date(ms).toLocaleString([], { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
 
-// Synthesize pleasant UI sound cues using standard Web Audio API (offline, zero-deps)
+// Sound effect synthesizer (Web Audio API)
 function playTone(freq = 600, type = "sine", duration = 0.12) {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -309,6 +341,31 @@ function speakPayslip(txt) {
   }
 }
 
+// Inline SVG QR Seal Generator
+function generateQRSeal(code) {
+  const n = 21;
+  const isCorner = (x, y) =>
+    (x < 7 && y < 7) || (x > 13 && y < 7) || (x < 7 && y > 13);
+  let rects = "";
+  for (let y = 0; y < n; y++) {
+    for (let x = 0; x < n; x++) {
+      if (isCorner(x, y)) {
+        const isBorder = (x === 0 || x === 6 || y === 0 || y === 6 || x === 14 || x === 20 || y === 14 || y === 20);
+        const isCore = (x >= 2 && x <= 4 && y >= 2 && y <= 4) || (x >= 16 && x <= 18 && y >= 2 && y <= 4) || (x >= 2 && x <= 4 && y >= 16 && y <= 18);
+        if (isBorder || isCore) {
+          rects += `<rect x="${x}" y="${y}" width="1" height="1" fill="#38bdf8"/>`;
+        }
+      } else {
+        const hashVal = parseInt(H(code + x + "," + y).slice(-1), 16);
+        if (hashVal % 2 === 0) {
+          rects += `<rect x="${x}" y="${y}" width="1" height="1" fill="#8b5cf6"/>`;
+        }
+      }
+    }
+  }
+  return `<svg class="passport-qr" viewBox="0 0 21 21" role="img" aria-label="Cryptographic Passport Seal">${rects}</svg>`;
+}
+
 // Header & Navigation Bar
 function hdr() {
   return `
@@ -336,7 +393,7 @@ function hdr() {
   </header>`;
 }
 
-// Hero Section directly styled after the reference photo
+// Hero Section
 function hero() {
   return `
   <section class="hero-ref">
@@ -357,10 +414,11 @@ function hero() {
   </section>`;
 }
 
-// Safe sector switching ensuring worker index is in bounds
 window.changeSector = function (newOrg) {
   S.org = newOrg;
   if (S.wk >= ORG[newOrg].ppl.length) S.wk = 0;
+  S.passportCode = "";
+  S.verifyResult = null;
   render();
 };
 
@@ -372,11 +430,9 @@ function worker() {
   const ledgerStatus = verifyWorker(o, w);
   const generalBad = verify(o);
 
-  // Localized Speech Text with native currency word
   const currencyWord = t("currencyWord");
   const sayText = `${t("hello")} ${g.ppl[w][0]}. ${t("hrs")}: ${c.reg}. ${t("ot")}: ${c.ot}. ${t("tot")}: ${c.pay} ${currencyWord}.`;
 
-  // Worker-scoped submitted reports
   const myKey = `${o}_${w}`;
   const workerReportKeys = S.myReports[myKey] || [];
   const allGroups = groups(o);
@@ -390,7 +446,6 @@ function worker() {
     </li>`;
   }).join("");
 
-  // Worker Skills (Skill Passport)
   const skills = (g.ppl[w] && g.ppl[w][2]) || ["General Operations & Site Safety", "First Aid Responder"];
   const skillsHtml = skills.map(sk => `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid rgba(255,255,255,0.06);margin-bottom:8px;">
@@ -405,7 +460,6 @@ function worker() {
     </div>
   `).join("");
 
-  // Worker's recent check-in chain (last 5 shifts)
   const workerShifts = D[o].sh.filter(r => r.w === w);
   const chainHtml = workerShifts.slice(-5).reverse().map(r => {
     const isAltered = generalBad >= 0 && D[o].sh[generalBad] === r;
@@ -422,14 +476,18 @@ function worker() {
     </li>`;
   }).join("");
 
-  // Elapsed time calculation if checked in
   let elapsedFormatted = "00h 00m 00s";
+  let liveWage = 0;
   if (op) {
     const diff = Math.max(0, Date.now() - op.s);
     const hrs = Math.floor(diff / 36e5).toString().padStart(2, "0");
     const mins = Math.floor((diff % 36e5) / 6e4).toString().padStart(2, "0");
     const secs = Math.floor((diff % 6e4) / 1e3).toString().padStart(2, "0");
     elapsedFormatted = `${hrs}h ${mins}m ${secs}s`;
+    const liveHours = diff / HR;
+    const liveReg = Math.min(liveHours, g.cap);
+    const liveOT = Math.max(0, liveHours - g.cap);
+    liveWage = Math.round(g.ppl[w][1] * (liveReg + liveOT * g.mult));
   }
 
   return `
@@ -438,7 +496,7 @@ function worker() {
     <div class="profile-bar">
       <div class="profile-select-wrapper">
         <div class="avatar-badge">${g.ppl[w][0][0]}</div>
-        <select aria-label="Select Worker" onchange="S.wk=+this.value;render()">
+        <select aria-label="Select Worker" onchange="S.wk=+this.value;S.passportCode='';render()">
           ${g.ppl.map((p, i) => `<option value="${i}" ${w === i ? "selected" : ""}>${p[0]} (₹${p[1]}/h)</option>`).join("")}
         </select>
       </div>
@@ -460,6 +518,7 @@ function worker() {
 
       ${op ? `
         <div class="elapsed-timer">${elapsedFormatted}</div>
+        <div style="font-size:20px;font-weight:700;color:var(--neon-cyan);margin-bottom:6px;">Live Earned: ₹${liveWage}</div>
         <p class="shift-info-sub">${t("elapsed")} · ${g.n}</p>
         <div class="action-orb-wrapper">
           <button class="action-orb checkout-mode" onclick="out()">
@@ -540,19 +599,36 @@ function worker() {
       </button>
     </div>
 
-    <!-- Skill Passport (SDG 8 Portable Digital Credentials) -->
+    <!-- Skill Passport & Work Credential Exporter -->
     <div class="card">
       <div class="card-header">
         <h3 class="card-title">
           <span class="card-title-icon">📜</span>
           ${t("skillPassport")}
         </h3>
-        <span class="pill cyan">Portable ID: #${H(g.ppl[w][0]).slice(0, 8)}</span>
+        <span class="pill cyan">ID: #${H(g.ppl[w][0]).slice(0, 8)}</span>
       </div>
       <p style="font-size:12.5px;color:var(--tx-dim);margin-bottom:14px;line-height:1.5;">
         ${t("skillSubtitle")}
       </p>
       <div>${skillsHtml}</div>
+
+      <div style="margin-top:16px;">
+        <button class="btn-pill-secondary" onclick="exportWorkerPassport()" style="width:100%;justify-content:center;">
+          <span>📦</span> ${t("createPassport")}
+        </button>
+      </div>
+
+      ${S.passportCode ? `
+        <div class="passport-container">
+          ${generateQRSeal(S.passportCode)}
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--neon-cyan);margin-bottom:4px;">✦ Portable Work Passport Code</div>
+            <textarea class="passport-code-area" readonly>${S.passportCode}</textarea>
+            <p style="font-size:11px;color:var(--tx-muted);margin-top:4px;">${t("passportHelp")}</p>
+          </div>
+        </div>
+      ` : ""}
     </div>
 
     <!-- Cryptographic Attendance Chain -->
@@ -622,7 +698,6 @@ function admin() {
   const now = Date.now();
   const sevenDaysAgo = now - 7 * 24 * HR;
 
-  // Accurately calculate 7-Day Window Totals
   let total7dHours = 0;
   let total7dOT = 0;
 
@@ -633,7 +708,7 @@ function admin() {
     total7dOT += c.ot;
 
     const riskLevel = f.length >= 2 ? ["Critical", "bad"] : f.length === 1 ? ["Medium", "wa"] : ["Low", "ok"];
-    const weeklyCap = g.cap * (g.maxStreak || 6); // standard weekly capacity
+    const weeklyCap = g.cap * (g.maxStreak || 6);
     const workloadPct = Math.min(100, Math.round(((c.reg + c.ot) / weeklyCap) * 100));
 
     return `
@@ -654,8 +729,20 @@ function admin() {
     </tr>`;
   }).join("");
 
-  // True anonymous hazard threshold check
-  const threshold = 2; // In small 3-person orgs, 2 distinct reporters confirm an incident safely
+  // 7-day fatigue heatmap generator
+  const heatmapRows = g.ppl.map((p, i) => {
+    const dailyHours = heat(D[o], i, now);
+    const cells = dailyHours.map(h => {
+      const isOverCap = h > g.cap;
+      const intensity = Math.min(100, Math.round((h / 14) * 100));
+      return `<div class="heat-cell ${isOverCap ? 'hi' : ''}" style="--p:${intensity}%;" title="${h.toFixed(1)}h logged">
+        ${h > 0 ? h.toFixed(0) + 'h' : '–'}
+      </div>`;
+    }).join("");
+    return `<div class="heat-label">${esc(p[0])}</div>${cells}`;
+  }).join("");
+
+  const threshold = 2;
   const gr = groups(o);
   const pendingCount = gr.filter(x => (D[o].st[x[0]] || "Received") !== "Resolved").length;
 
@@ -771,6 +858,21 @@ function admin() {
       </div>
     </div>
 
+    <!-- 7-Day Fatigue Heatmap Card -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <span class="card-title-icon">📊</span>
+          ${t("heatmapTitle")}
+        </h3>
+        <span class="pill cyan">Last 7 Calendar Days</span>
+      </div>
+      <p style="font-size:12.5px;color:var(--tx-dim);margin-bottom:12px;">${t("heatmapSubtitle")}</p>
+      <div class="heat-grid">
+        ${heatmapRows}
+      </div>
+    </div>
+
     <!-- Fatigue & Quit-Risk Intelligence Radar -->
     <div class="card">
       <div class="card-header">
@@ -798,6 +900,40 @@ function admin() {
           </tbody>
         </table>
       </div>
+    </div>
+
+    <!-- Work Passport Cross-Sector Verification Card -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">
+          <span class="card-title-icon">🛡</span>
+          ${t("verifyPassportTitle")}
+        </h3>
+        <span class="pill cyan">Cross-Sector Trust Protocol</span>
+      </div>
+      <p style="font-size:12.5px;color:var(--tx-dim);margin-bottom:12px;">
+        ${t("verifyPassportSubtitle")}
+      </p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <textarea id="vc" placeholder="Paste Base64 Work Passport credential here..." style="font-family:var(--font-mono);font-size:12px;height:75px;">${esc(S.verifyCode)}</textarea>
+        <div>
+          <button class="btn-pill-primary" onclick="verifyApplicantPassport()">${t("verifyBtn")}</button>
+        </div>
+      </div>
+
+      ${S.verifyResult ? `
+        <div style="margin-top:14px;padding:12px 16px;border-radius:14px;background:${S.verifyResult.ok ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'};border:1px solid ${S.verifyResult.ok ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'};">
+          ${S.verifyResult.ok ? `
+            <div style="font-weight:700;color:var(--neon-green);margin-bottom:4px;">✔ Credential Authenticated</div>
+            <div style="font-size:13.5px;color:#fff;">Worker: <b>${esc(S.verifyResult.name)}</b> | Issuer: <b>${esc(S.verifyResult.sector)}</b></div>
+            <div style="font-size:12.5px;color:var(--tx-dim);margin-top:2px;">Verified: <b>${S.verifyResult.shifts} shifts</b> (${S.verifyResult.hours} hours logged)</div>
+            ${S.verifyResult.skills && S.verifyResult.skills.length ? `<div style="font-size:12px;color:var(--neon-cyan);margin-top:4px;">Skills: ${S.verifyResult.skills.map(esc).join(", ")}</div>` : ""}
+          ` : `
+            <div style="font-weight:700;color:var(--neon-red);margin-bottom:2px;">❌ Verification Failed</div>
+            <div style="font-size:13px;color:#ff9b9b;">${esc(S.verifyResult.why)}</div>
+          `}
+        </div>
+      ` : ""}
     </div>
 
     <!-- Anonymous Incident Investigation Center -->
@@ -873,10 +1009,25 @@ window.out = () => {
   const op = D[S.org].open[S.wk];
   if (!op) return;
   playTone(440, "sine", 0.15);
-  // Compute safe end time using simulated hours without overlapping past records
   const end = op.s + S.len * HR;
   add(S.org, S.wk, op.s, end);
   delete D[S.org].open[S.wk];
+  render();
+};
+
+window.exportWorkerPassport = () => {
+  const p = genPassport(D[S.org], ORG[S.org], S.wk, S.org);
+  S.passportCode = encodePassport(p);
+  playTone(720, "sine", 0.15);
+  render();
+};
+
+window.verifyApplicantPassport = () => {
+  const input = $("#vc");
+  if (!input) return;
+  S.verifyCode = input.value.trim();
+  S.verifyResult = checkPassport(S.verifyCode, D, ORG);
+  playTone(S.verifyResult.ok ? 800 : 250, "sine", 0.18);
   render();
 };
 
@@ -906,6 +1057,8 @@ window.resetOrg = () => {
   seed(S.org);
   S.tamperedBackup = null;
   S.activeBlockInspect = null;
+  S.passportCode = "";
+  S.verifyResult = null;
   render();
 };
 
@@ -947,7 +1100,6 @@ window.setIncidentStatus = (k, st) => {
   render();
 };
 
-// Safe Voice Recognition with non-destructive text appending
 window.toggleMic = () => {
   const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRec) {
@@ -1017,7 +1169,6 @@ function render() {
 
 // =========================================================================
 // Interactive 3D Cosmic Particle Wave Mesh Orb Canvas Engine
-// Recreating the exact hypnotic holographic sphere from the reference image
 // =========================================================================
 function initOrbCanvas() {
   const canvas = $("#canvas-orb");
@@ -1063,27 +1214,22 @@ function initOrbCanvas() {
     const cy = Math.min(height * 0.42, 380);
     const fov = 480;
 
-    // Harmonic Undulating Wave Sphere
     for (let r = 0; r < RINGS; r++) {
       const phi = ((r + 0.5) / RINGS) * Math.PI - Math.PI / 2;
       ctx.beginPath();
-      let firstPt = null;
 
       for (let p = 0; p <= PTS_PER_RING; p++) {
         const theta = (p / PTS_PER_RING) * Math.PI * 2;
 
-        // Dynamic 3D Harmonic Wave Equation
         const wave =
           Math.sin(theta * 4 + time * 1.8) * Math.cos(phi * 3 - time * 1.2) * 0.16 +
           Math.sin(theta * 7 - time * 2.4) * 0.06;
         const rad = BASE_RADIUS * (1 + wave);
 
-        // Spherical Coordinates
         const x0 = rad * Math.cos(phi) * Math.sin(theta);
         const y0 = rad * Math.sin(phi);
         const z0 = rad * Math.cos(phi) * Math.cos(theta);
 
-        // 3D Rotations (continuous idle spin + mouse tracking)
         const totalRotY = rotY + time * 0.25;
         const x1 = x0 * Math.cos(totalRotY) - z0 * Math.sin(totalRotY);
         const z1 = x0 * Math.sin(totalRotY) + z0 * Math.cos(totalRotY);
@@ -1091,19 +1237,16 @@ function initOrbCanvas() {
         const y2 = y0 * Math.cos(rotX) - z1 * Math.sin(rotX);
         const z2 = y0 * Math.sin(rotX) + z1 * Math.cos(rotX);
 
-        // Perspective Projection
         const scale = fov / (fov + z2 + 300);
         const sx = cx + x1 * scale;
         const sy = cy + y2 * scale;
 
         if (p === 0) {
           ctx.moveTo(sx, sy);
-          firstPt = { sx, sy };
         } else {
           ctx.lineTo(sx, sy);
         }
 
-        // Draw luminous particle beads at selected wave crests
         if (p % 4 === 0 && Math.abs(wave) > 0.05) {
           const particleGrad = x1 < 0 ? "rgba(139, 92, 246, 0.7)" : "rgba(244, 63, 94, 0.7)";
           ctx.fillStyle = particleGrad;
@@ -1113,12 +1256,11 @@ function initOrbCanvas() {
         }
       }
 
-      // Dual Neon Gradient matching reference: Violet/Cyan on Left, Fiery Coral on Right
       const grad = ctx.createLinearGradient(cx - BASE_RADIUS, cy, cx + BASE_RADIUS, cy);
-      grad.addColorStop(0, "rgba(56, 189, 248, 0.45)"); // Neon Cyan
-      grad.addColorStop(0.35, "rgba(139, 92, 246, 0.4)"); // Neon Violet
-      grad.addColorStop(0.65, "rgba(244, 63, 94, 0.45)"); // Neon Coral
-      grad.addColorStop(1, "rgba(249, 115, 22, 0.4)"); // Neon Orange
+      grad.addColorStop(0, "rgba(56, 189, 248, 0.45)");
+      grad.addColorStop(0.35, "rgba(139, 92, 246, 0.4)");
+      grad.addColorStop(0.65, "rgba(244, 63, 94, 0.45)");
+      grad.addColorStop(1, "rgba(249, 115, 22, 0.4)");
 
       ctx.strokeStyle = grad;
       ctx.lineWidth = 1.1;
@@ -1153,7 +1295,6 @@ seed("fac");
 render();
 initOrbCanvas();
 
-// Export globals for inline event handlers
 Object.assign(window, {
   S, D, ORG, render, speakPayslip
 });

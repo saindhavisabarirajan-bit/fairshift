@@ -225,3 +225,64 @@ export function groups(d) {
   });
   return Object.entries(m);
 }
+
+// Work passport: exportable verified record of training, experience, and shift ledger
+export function passport(d, g, w, org) {
+  return {
+    v: 1,
+    o: org,
+    n: g.ppl[w][0],
+    skills: (g.ppl[w] && g.ppl[w][2]) || ["General Operations", "Safety Protocol"],
+    r: d.sh.filter(r => r.w === w).map(r => [r.w, r.s, r.e, r.prev, r.hash])
+  };
+}
+
+export const encode = p => btoa(JSON.stringify(p));
+
+// Verify passport: verifies internal hashes AND cross-validates against issuing ledger
+export function checkPassport(code, ledgers, orgs) {
+  let p;
+  try {
+    p = JSON.parse(atob(code.trim()));
+  } catch (e) {
+    return { ok: false, why: "Not a valid passport credential code" };
+  }
+  const d = ledgers[p && p.o];
+  if (!d || !Array.isArray(p.r)) {
+    return { ok: false, why: "Unknown credential issuer or malformed payload" };
+  }
+  let ms = 0;
+  for (const [w, s, e, prev, hash] of p.r) {
+    if (H(prev + w + s + e) !== hash) {
+      return { ok: false, why: "A record was edited after it was issued" };
+    }
+    if (!d.sh.some(x => x.hash === hash && x.s === s && x.e === e)) {
+      return { ok: false, why: "A record does not match the employer's ledger" };
+    }
+    ms += e - s;
+  }
+  const sectorName = orgs[p.o] ? orgs[p.o].n : p.o;
+  return {
+    ok: true,
+    name: p.n,
+    sector: sectorName,
+    skills: p.skills || [],
+    shifts: p.r.length,
+    hours: +(ms / HR).toFixed(1)
+  };
+}
+
+// 7-day daily hours calculation for heatmap
+export function heat(d, w, now = Date.now()) {
+  const d0 = new Date(now);
+  d0.setHours(0, 0, 0, 0);
+  const t0 = d0.getTime();
+  const DAY_MS = 864e5;
+  return [7, 6, 5, 4, 3, 2, 1].map(k => {
+    const dayStart = t0 - k * DAY_MS;
+    const dayEnd = t0 - (k - 1) * DAY_MS;
+    return d.sh
+      .filter(r => r.w === w && r.s >= dayStart && r.s < dayEnd)
+      .reduce((acc, r) => acc + (r.e - r.s) / HR, 0);
+  });
+}

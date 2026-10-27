@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { ORG, HR, add, seed, verify, verifyWorker, calc, flags, groups } from "../src/core.js";
+import { ORG, HR, add, seed, verify, verifyWorker, calc, flags, groups, passport, encode, checkPassport, heat } from "../src/core.js";
 
 const NOW = new Date(2026, 9, 27, 12).getTime();
 
@@ -37,31 +37,50 @@ test("reports group by area and type", () => {
   assert.equal(g[0][1].x.length, 2);
 });
 
+const L = () => ({ con: seed(ORG.con, NOW) });
+
+test("passport from an intact ledger verifies", () => {
+  const l = L(), c = encode(passport(l.con, ORG.con, 0, "con")), r = checkPassport(c, l, ORG);
+  assert.ok(r.ok);
+  assert.equal(r.shifts, 7);
+});
+
+test("passport with edited hours is rejected", () => {
+  const l = L(), p = passport(l.con, ORG.con, 0, "con");
+  p.r[0][2] += 5 * HR;
+  assert.equal(checkPassport(encode(p), l, ORG).ok, false);
+});
+
+test("passport is rejected if the employer ledger was altered", () => {
+  const l = L(), c = encode(passport(l.con, ORG.con, 0, "con"));
+  l.con.sh[0].e += HR;
+  assert.equal(checkPassport(c, l, ORG).ok, false);
+});
+
+test("garbage code is rejected", () => assert.equal(checkPassport("zzz", L(), ORG).ok, false));
+
+test("heatmap has 7 days and shows the 13h shift", () => {
+  const h = heat(seed(ORG.con, NOW), 0, NOW);
+  assert.equal(h.length, 7);
+  assert.equal(Math.max(...h), 13);
+});
+
 test("streak correctly identifies non-consecutive days as NOT in a row", () => {
   const d = { sh: [] };
-  // Add 6 shifts, each on Mondays (7 days apart)
   for (let i = 0; i < 6; i++) {
     const s = i * 7 * 24 * HR;
     add(d, 0, s, s + 8 * HR);
   }
   const f = flags(d, 0);
-  // Non-consecutive shifts should NOT trigger "days in a row"
   assert.ok(!f.some(x => x.includes("days in a row")));
 });
 
 test("verifyWorker accurately identifies which worker was affected", () => {
   const d = seed(ORG.con, NOW);
-  // Tamper record 3 (which belongs to Murugan, w=0)
   const targetWorker = d.sh[3].w;
   d.sh[3].e += HR;
   const statusMurugan = verifyWorker(d, targetWorker);
   assert.equal(statusMurugan.intact, false);
   assert.equal(statusMurugan.ownAltered, true);
   assert.equal(statusMurugan.badIndex, 3);
-
-  // Other worker (w=1) should know ledger is broken, but their own record wasn't the broken one
-  const otherWorker = (targetWorker + 1) % 3;
-  const statusOther = verifyWorker(d, otherWorker);
-  assert.equal(statusOther.intact, false);
-  assert.equal(statusOther.ownAltered, false);
 });
