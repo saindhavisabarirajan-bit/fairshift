@@ -8,11 +8,7 @@ export const ORG = {
     minRest: 10,
     maxStreak: 6,
     areas: ["Scaffold A", "Crane zone", "Site gate"],
-    ppl: [
-      ["Murugan", 90, ["Scaffolding Safety (Level 2)", "Heavy Crane Rigging", "First Aid Responder"]],
-      ["Selvi", 85, ["Concrete Pouring Specialist", "Site Gate Security", "OSHA Basics"]],
-      ["Raju", 95, ["High-Altitude Scaffolding", "Equipment Maintenance"]]
-    ]
+    ppl: [["Murugan", 90], ["Selvi", 85], ["Raju", 95]]
   },
   col: {
     n: "College Campus",
@@ -22,11 +18,7 @@ export const ORG = {
     minRest: 10,
     maxStreak: 6,
     areas: ["Hostel block", "Canteen", "Labs"],
-    ppl: [
-      ["Lakshmi", 70, ["Chemical Lab Safety", "Hazardous Waste Handling"]],
-      ["Karthik", 75, ["Campus Electrical Systems", "Fire Marshall Certified"]],
-      ["Fatima", 72, ["Facility Sanitation Protocol", "First Aid Responder"]]
-    ]
+    ppl: [["Lakshmi", 70], ["Karthik", 75], ["Fatima", 72]]
   },
   hos: {
     n: "Hospital & Healthcare",
@@ -36,11 +28,7 @@ export const ORG = {
     minRest: 11,
     maxStreak: 6,
     areas: ["ICU Ward", "Emergency Care", "Sanitation Bay"],
-    ppl: [
-      ["Nurse Priya", 120, ["ICU Emergency Protocol", "Infection Control Specialist", "BLS Certified"]],
-      ["Dr. Anand", 150, ["Trauma Care Level 1", "Radiation Safety Protocol"]],
-      ["Ramesh", 80, ["Biohazard Waste Disposal", "Sanitation Team Lead"]]
-    ]
+    ppl: [["Nurse Priya", 120], ["Dr. Anand", 150], ["Ramesh", 80]]
   },
   fac: {
     n: "Manufacturing Factory",
@@ -50,11 +38,7 @@ export const ORG = {
     minRest: 10,
     maxStreak: 6,
     areas: ["Assembly Line 1", "Press Machine B", "Chemical Storage"],
-    ppl: [
-      ["Vikram", 95, ["Hydraulic Press Operator", "Forklift Certified", "Machine Guarding"]],
-      ["Deepa", 90, ["Assembly Line Quality Control", "Ergonomics Safety"]],
-      ["Sunil", 85, ["Chemical Storage Handling", "Spill Response Protocol"]]
-    ]
+    ppl: [["Vikram", 95], ["Deepa", 90], ["Sunil", 85]]
   }
 };
 
@@ -87,7 +71,7 @@ export function seed(g, now = Date.now()) {
   d0.setHours(0, 0, 0, 0);
   const t0 = d0.getTime();
 
-  // Seed 7 days of attendance
+  // Seed 7 days of shifts
   for (let k = 7; k >= 1; k--) {
     g.ppl.forEach((_, i) => {
       if (i === 2 && k % 3 === 0) return;
@@ -96,15 +80,8 @@ export function seed(g, now = Date.now()) {
     });
   }
 
-  // Realistic seed hazard reports tailored to sector
-  const hazardsMap = {
-    "Scaffold A": ["Platform board cracked", "Loose railing near stairs"],
-    "Hostel block": ["Water leak near stairs", "Faulty electrical switch"],
-    "ICU Ward": ["Oxygen pressure sensor alert", "Spill near triage corridor"],
-    "Assembly Line 1": ["Emergency stop button delayed", "Overheating bearing on roller 4"]
-  };
-  const defaultHazards = (g.areas && hazardsMap[g.areas[0]]) || ["Platform board cracked", "Loose railing near stairs"];
-
+  // Realistic seed hazard reports
+  const defaultHazards = ["Platform board cracked", "Loose railing near stairs"];
   for (let i = 0; i < defaultHazards.length; i++) {
     d.rep.push({
       a: g.areas[0],
@@ -164,7 +141,7 @@ export function flags(d, w, g) {
   const L = d.sh.filter(r => r.w === w).slice().sort((a, b) => a.s - b.s);
   const f = [];
 
-  // Flag 1: Long shifts exceeding limit
+  // Flag 1: Any shift exceeding maxShift hours
   if (L.some(r => (r.e - r.s) / HR > maxShift)) {
     f.push(`Shift >${maxShift}h`);
   }
@@ -226,30 +203,29 @@ export function groups(d) {
   return Object.entries(m);
 }
 
-// Work passport: exportable verified record of training, experience, and shift ledger
+// Work passport: a worker's own records packed into a shareable code
 export function passport(d, g, w, org) {
   return {
     v: 1,
     o: org,
     n: g.ppl[w][0],
-    skills: (g.ppl[w] && g.ppl[w][2]) || ["General Operations", "Safety Protocol"],
     r: d.sh.filter(r => r.w === w).map(r => [r.w, r.s, r.e, r.prev, r.hash])
   };
 }
 
 export const encode = p => btoa(JSON.stringify(p));
 
-// Verify passport: verifies internal hashes AND cross-validates against issuing ledger
+// Checks each record is self-consistent AND matches the issuing ledger
 export function checkPassport(code, ledgers, orgs) {
   let p;
   try {
     p = JSON.parse(atob(code.trim()));
   } catch (e) {
-    return { ok: false, why: "Not a valid passport credential code" };
+    return { ok: false, why: "Not a valid passport code" };
   }
   const d = ledgers[p && p.o];
   if (!d || !Array.isArray(p.r)) {
-    return { ok: false, why: "Unknown credential issuer or malformed payload" };
+    return { ok: false, why: "Unknown issuer" };
   }
   let ms = 0;
   for (const [w, s, e, prev, hash] of p.r) {
@@ -266,13 +242,12 @@ export function checkPassport(code, ledgers, orgs) {
     ok: true,
     name: p.n,
     sector: sectorName,
-    skills: p.skills || [],
     shifts: p.r.length,
     hours: +(ms / HR).toFixed(1)
   };
 }
 
-// 7-day daily hours calculation for heatmap
+// Hours worked per day for the last 7 days (oldest first), used by the admin heatmap
 export function heat(d, w, now = Date.now()) {
   const d0 = new Date(now);
   d0.setHours(0, 0, 0, 0);
@@ -283,6 +258,6 @@ export function heat(d, w, now = Date.now()) {
     const dayEnd = t0 - (k - 1) * DAY_MS;
     return d.sh
       .filter(r => r.w === w && r.s >= dayStart && r.s < dayEnd)
-      .reduce((acc, r) => acc + (r.e - r.s) / HR, 0);
+      .reduce((a, r) => a + (r.e - r.s) / HR, 0);
   });
 }
